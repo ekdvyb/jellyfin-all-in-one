@@ -46,7 +46,7 @@ Older servers (10.10 and below) are not supported by this release.
 1. In Jellyfin, go to **Dashboard → Plugins → Repositories**.
 2. Add a repository with this URL:
    ```
-   https://raw.githubusercontent.com/ekdvyb/jellyfin-all-in-one/main/manifest.json
+   https://raw.githubusercontent.com/ekdvyb/jellyfin-all-in-one/refs/heads/main/manifest.json
    ```
 3. Go to the **Catalog** tab, find **Jellyfin All-In-One**, and install it.
 4. Restart Jellyfin.
