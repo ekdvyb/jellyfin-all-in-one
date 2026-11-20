@@ -30,10 +30,14 @@ A single Jellyfin plugin that does two things well:
 
 ## Requirements
 
-- Jellyfin **12.4** or newer (`targetAbi: 12.4.0.0`)
-- Built for `net10.0`
+The manifest contains a build for each supported server line; Jellyfin automatically picks the right one:
 
-> Running an older Jellyfin release? The code compiles against the current Jellyfin 12 API. Let me know your server version and I can produce a build for 10.11 / net9.0 as well.
+| Jellyfin server | Plugin version | Target framework |
+| --- | --- | --- |
+| **12.4+** | `1.0.1.0` | `net10.0` |
+| **10.11.x** | `1.0.0.0` | `net9.0` |
+
+Older servers (10.10 and below) are not supported by this release.
 
 ## Installation
 
@@ -44,12 +48,16 @@ A single Jellyfin plugin that does two things well:
    ```
    https://raw.githubusercontent.com/ekdvyb/jellyfin-all-in-one/main/manifest.json
    ```
-3. Go to the **Catalog** tab, find **All-In-One: Collections & YouTube Metadata**, and install it.
+3. Go to the **Catalog** tab, find **Jellyfin All-In-One**, and install it.
 4. Restart Jellyfin.
+
+If the plugin does not appear in the catalog, check the **version compatibility** table above — Jellyfin hides versions whose `targetAbi` is newer than your server.
 
 ### Option B — Manual install
 
-1. Download `jellyfin-plugin-all-in-one-1.0.0.0.zip` from the [latest release](https://github.com/ekdvyb/jellyfin-all-in-one/releases/latest).
+1. Download the ZIP matching your server from the [latest release](https://github.com/ekdvyb/jellyfin-all-in-one/releases/latest):
+   - `jellyfin-plugin-all-in-one-1.0.1.0.zip` for Jellyfin 12.4+
+   - `jellyfin-plugin-all-in-one-1.0.0.0.zip` for Jellyfin 10.11.x
 2. Extract `Jellyfin.Plugin.AllInOne.dll` into:
    ```
    <jellyfin data folder>/plugins/AllInOne/
@@ -100,7 +108,9 @@ cd jellyfin-all-in-one
 dotnet build Jellyfin.Plugin.AllInOne/Jellyfin.Plugin.AllInOne.csproj -c Release
 ```
 
-The output DLL is in `Jellyfin.Plugin.AllInOne/bin/Release/net10.0/`.
+Output DLLs:
+- `Jellyfin.Plugin.AllInOne/bin/Release/net10.0/` (Jellyfin 12.4)
+- `Jellyfin.Plugin.AllInOne/bin/Release/net9.0/` (Jellyfin 10.11)
 
 ## License
 

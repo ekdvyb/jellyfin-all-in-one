@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version, e.g. 1.0.0.0'
+        description: 'Jellyfin 12 version, e.g. 1.0.1.0 (the 10.11 build uses the preceding patch number)'
         required: true
 
 permissions:
@@ -19,32 +19,48 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: |
+            9.0.x
+            10.0.x
 
-      - name: Resolve version
+      - name: Resolve versions
         id: version
         run: |
           RAW="${{ github.event.release.tag_name || inputs.version }}"
-          echo "value=${RAW#v}" >> "$GITHUB_OUTPUT"
+          V12="${RAW#v}"
+          MAJOR="$(echo "$V12" | cut -d. -f1)"
+          MINOR="$(echo "$V12" | cut -d. -f2)"
+          PATCH="$(echo "$V12" | cut -d. -f3)"
+          V1011="${MAJOR}.${MINOR}.$((PATCH > 0 ? PATCH - 1 : 0)).0"
+          echo "v12=$V12" >> "$GITHUB_OUTPUT"
+          echo "v1011=$V1011" >> "$GITHUB_OUTPUT"
 
-      - name: Build
+      - name: Build Jellyfin 10.11 package
         run: |
           dotnet build Jellyfin.Plugin.AllInOne/Jellyfin.Plugin.AllInOne.csproj \
-            -c Release \
-            -p:Version=${{ steps.version.outputs.value }} \
-            -p:AssemblyVersion=${{ steps.version.outputs.value }} \
-            -p:FileVersion=${{ steps.version.outputs.value }}
-
-      - name: Package
-        run: |
-          VERSION="${{ steps.version.outputs.value }}"
+            -c Release -f net9.0 \
+            -p:Version=${{ steps.version.outputs.v1011 }} \
+            -p:AssemblyVersion=${{ steps.version.outputs.v1011 }} \
+            -p:FileVersion=${{ steps.version.outputs.v1011 }}
           mkdir -p dist
-          cp Jellyfin.Plugin.AllInOne/bin/Release/net10.0/Jellyfin.Plugin.AllInOne.dll dist/
-          (cd dist && zip -j "../jellyfin-plugin-all-in-one-${VERSION}.zip" Jellyfin.Plugin.AllInOne.dll)
-          echo "Checksum (MD5) for manifest.json:"
-          md5sum "jellyfin-plugin-all-in-one-${VERSION}.zip"
+          cp Jellyfin.Plugin.AllInOne/bin/Release/net9.0/Jellyfin.Plugin.AllInOne.dll dist/
+          (cd dist && zip -j "../jellyfin-plugin-all-in-one-${{ steps.version.outputs.v1011 }}.zip" Jellyfin.Plugin.AllInOne.dll)
+          rm dist/Jellyfin.Plugin.AllInOne.dll
 
-      - name: Attach zip to release
+      - name: Build Jellyfin 12 package
+        run: |
+          dotnet build Jellyfin.Plugin.AllInOne/Jellyfin.Plugin.AllInOne.csproj \
+            -c Release -f net10.0 \
+            -p:Version=${{ steps.version.outputs.v12 }} \
+            -p:AssemblyVersion=${{ steps.version.outputs.v12 }} \
+            -p:FileVersion=${{ steps.version.outputs.v12 }}
+          cp Jellyfin.Plugin.AllInOne/bin/Release/net10.0/Jellyfin.Plugin.AllInOne.dll dist/
+          (cd dist && zip -j "../jellyfin-plugin-all-in-one-${{ steps.version.outputs.v12 }}.zip" Jellyfin.Plugin.AllInOne.dll)
+
+          echo "Checksums for manifest.json:"
+          md5sum jellyfin-plugin-all-in-one-*.zip
+
+      - name: Attach packages to release
         uses: softprops/action-gh-release@v2
         with:
           files: jellyfin-plugin-all-in-one-*.zip

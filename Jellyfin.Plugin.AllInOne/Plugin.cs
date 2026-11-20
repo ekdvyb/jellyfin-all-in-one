@@ -33,7 +33,7 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     }
 
     /// <inheritdoc />
-    public override string Name => "All-In-One: Collections & YouTube Metadata";
+    public override string Name => "Jellyfin All-In-One";
 
     /// <inheritdoc />
     public override string Description =>
