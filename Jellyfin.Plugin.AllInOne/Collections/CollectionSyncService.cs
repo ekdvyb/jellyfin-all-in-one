@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.AllInOne.Collections;
@@ -97,24 +98,23 @@ public sealed class CollectionSyncService : IDisposable
             _logger.LogInformation("Starting automatic collection sync.");
             progress?.Report(5);
 
-            var movies = _libraryManager.GetItemList(new InternalItemsQuery
+            var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                Recursive = true,
-                IsVirtualItem = false,
-                CollapseBoxSetItems = false
-            });
-
-            var shows = _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                IncludeItemTypes = [BaseItemKind.Series],
+                IncludeItemTypes =
+                [
+                    BaseItemKind.Movie,
+                    BaseItemKind.Series,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Video,
+                    BaseItemKind.MusicVideo
+                ],
                 Recursive = true,
                 IsVirtualItem = false,
                 CollapseBoxSetItems = false
             });
 
             progress?.Report(20);
-            var desired = BuildDesiredCollections(movies, shows, config);
+            var desired = SmartGroupBuilder.Build(items, config);
             _logger.LogInformation("Desired automatic collections: {Count}", desired.Count);
             progress?.Report(35);
 
@@ -167,6 +167,8 @@ public sealed class CollectionSyncService : IDisposable
                     _logger.LogInformation("Created collection '{Name}'.", name);
                 }
 
+                await EnsureManagedMetadataAsync(collection, cancellationToken).ConfigureAwait(false);
+
                 var currentIds = collection.GetLinkedChildren()
                     .Select(i => i.Id)
                     .ToHashSet();
@@ -206,85 +208,33 @@ public sealed class CollectionSyncService : IDisposable
         }
     }
 
-    private static Dictionary<string, List<Guid>> BuildDesiredCollections(
-        IReadOnlyList<BaseItem> movies,
-        IReadOnlyList<BaseItem> shows,
-        PluginConfiguration config)
+    private async Task EnsureManagedMetadataAsync(BoxSet collection, CancellationToken cancellationToken)
     {
-        var result = new Dictionary<string, List<Guid>>(StringComparer.OrdinalIgnoreCase);
-        var prefix = config.CollectionPrefix ?? string.Empty;
-        var min = Math.Max(1, config.MinItemsPerCollection);
+        var changed = false;
 
-        void Add(string name, IEnumerable<Guid> ids)
+        if (!collection.IsLocked)
         {
-            var list = ids.Distinct().ToList();
-            if (list.Count >= min)
-            {
-                result[prefix + name] = list;
-            }
+            collection.IsLocked = true;
+            changed = true;
         }
 
-        if (config.CreateAllMoviesCollection)
+        var locked = collection.LockedFields?.ToList() ?? [];
+        var wanted = new[] { MetadataField.Name, MetadataField.Overview };
+        foreach (var field in wanted.Where(f => !locked.Contains(f)))
         {
-            Add("All Movies", movies.Select(i => i.Id));
+            locked.Add(field);
+            changed = true;
         }
 
-        if (config.CreateAllShowsCollection)
+        if (changed)
         {
-            Add("All TV Shows", shows.Select(i => i.Id));
+            collection.LockedFields = locked.ToArray();
+            await _libraryManager.UpdateItemAsync(
+                collection,
+                collection.GetParent(),
+                ItemUpdateType.MetadataEdit,
+                cancellationToken).ConfigureAwait(false);
         }
-
-        if (config.CreateGenreCollections)
-        {
-            var movieGenres = movies
-                .Where(i => i.Genres is not null)
-                .SelectMany(i => i.Genres!.Select(g => (Genre: g.Trim(), Item: i)))
-                .Where(x => !string.IsNullOrWhiteSpace(x.Genre))
-                .GroupBy(x => x.Genre, StringComparer.OrdinalIgnoreCase);
-
-            foreach (var group in movieGenres)
-            {
-                Add($"{group.Key} Movies", group.Select(x => x.Item.Id));
-            }
-
-            var showGenres = shows
-                .Where(i => i.Genres is not null)
-                .SelectMany(i => i.Genres!.Select(g => (Genre: g.Trim(), Item: i)))
-                .Where(x => !string.IsNullOrWhiteSpace(x.Genre))
-                .GroupBy(x => x.Genre, StringComparer.OrdinalIgnoreCase);
-
-            foreach (var group in showGenres)
-            {
-                Add($"{group.Key} TV Shows", group.Select(x => x.Item.Id));
-            }
-        }
-
-        if (config.CreateDecadeCollections)
-        {
-            var movieDecades = movies
-                .Select(i => new { Item = i, Year = i.ProductionYear ?? i.PremiereDate?.Year })
-                .Where(x => x.Year.HasValue)
-                .Select(x => new { x.Item, Decade = x.Year!.Value / 10 * 10 })
-                .GroupBy(x => x.Decade);
-
-            foreach (var group in movieDecades)
-            {
-                Add($"Movies from the {group.Key}s", group.Select(x => x.Item.Id));
-            }
-
-            var showDecades = shows
-                .Select(i => new { Item = i, Year = i.ProductionYear ?? i.PremiereDate?.Year })
-                .Where(x => x.Year.HasValue)
-                .Select(x => new { x.Item, Decade = x.Year!.Value / 10 * 10 })
-                .GroupBy(x => x.Decade);
-
-            foreach (var group in showDecades)
-            {
-                Add($"TV Shows from the {group.Key}s", group.Select(x => x.Item.Id));
-            }
-        }
-
-        return result;
     }
 
     /// <inheritdoc />

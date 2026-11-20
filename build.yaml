@@ -1,18 +1,18 @@
 ---
 name: "Jellyfin All-In-One"
 guid: "bb1a6c35-3d1b-48af-8d0a-3c8d0ff039cb"
-version: "1.0.0.0"
+version: "1.1.0.0"
 targetAbi: "12.4.0.0"
 framework: "net10.0"
-overview: "Automatic movie/TV collections and YouTube titles, descriptions and thumbnails."
+overview: "Smart collections by franchise, studio, title, series and genre, plus YouTube metadata."
 description: >
-  A single Jellyfin plugin that builds and maintains collections for all movies and TV
-  shows (optionally by genre and decade) and enriches YouTube videos with titles,
-  descriptions and thumbnails fetched from YouTube when they are added to the library.
+  A single Jellyfin plugin that builds smart collections from the library — franchises and
+  trilogies, studios, duplicate names, TV series, genres and YouTube channels — and enriches
+  YouTube videos with titles, channels, descriptions and thumbnails without an API key.
 category: "General"
 owner: "ekdvyb"
 artifacts:
   - "Jellyfin.Plugin.AllInOne.dll"
 changelog: >
-  Initial release: automatic All Movies / All TV Shows, genre and decade collections,
-  and keyless YouTube metadata + thumbnail fetching.
+  Replaced broad All Movies/All TV Shows lists with configurable smart grouping; added
+  franchise/trilogy detection, YouTube channel grouping and channel-to-studio metadata.

@@ -1,19 +1,18 @@
-name: 🚀 Release
+name: 📦 Package
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       version:
-        description: 'Jellyfin 12 version, e.g. 1.0.1.0 (the 10.11 build uses the preceding patch number)'
+        description: 'Plugin version, e.g. 1.1.0.0'
         required: true
+        default: '1.1.0.0'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  release:
+  package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,68 +24,33 @@ jobs:
             9.0.x
             10.0.x
 
-      - name: Resolve versions
-        id: version
-        run: |
-          RAW="${{ github.event.release.tag_name || inputs.version }}"
-          V12="${RAW#v}"
-          MAJOR="$(echo "$V12" | cut -d. -f1)"
-          MINOR="$(echo "$V12" | cut -d. -f2)"
-          PATCH="$(echo "$V12" | cut -d. -f3)"
-          V1011="${MAJOR}.${MINOR}.$((PATCH > 0 ? PATCH - 1 : 0)).0"
-          echo "v12=$V12" >> "$GITHUB_OUTPUT"
-          echo "v1011=$V1011" >> "$GITHUB_OUTPUT"
-
       - name: Build Jellyfin 10.11 package
         run: |
           dotnet build Jellyfin.Plugin.AllInOne/Jellyfin.Plugin.AllInOne.csproj \
             -c Release -f net9.0 \
-            -p:Version=${{ steps.version.outputs.v1011 }} \
-            -p:AssemblyVersion=${{ steps.version.outputs.v1011 }} \
-            -p:FileVersion=${{ steps.version.outputs.v1011 }}
+            -p:Version=${{ inputs.version }} \
+            -p:AssemblyVersion=${{ inputs.version }} \
+            -p:FileVersion=${{ inputs.version }}
           mkdir -p dist
           cp Jellyfin.Plugin.AllInOne/bin/Release/net9.0/Jellyfin.Plugin.AllInOne.dll dist/
-          (cd dist && zip -j "../jellyfin-plugin-all-in-one-${{ steps.version.outputs.v1011 }}.zip" Jellyfin.Plugin.AllInOne.dll)
+          (cd dist && zip -j "../jellyfin-plugin-all-in-one-${{ inputs.version }}-jellyfin10.11.zip" Jellyfin.Plugin.AllInOne.dll)
           rm dist/Jellyfin.Plugin.AllInOne.dll
 
       - name: Build Jellyfin 12 package
         run: |
           dotnet build Jellyfin.Plugin.AllInOne/Jellyfin.Plugin.AllInOne.csproj \
             -c Release -f net10.0 \
-            -p:Version=${{ steps.version.outputs.v12 }} \
-            -p:AssemblyVersion=${{ steps.version.outputs.v12 }} \
-            -p:FileVersion=${{ steps.version.outputs.v12 }}
+            -p:Version=${{ inputs.version }} \
+            -p:AssemblyVersion=${{ inputs.version }} \
+            -p:FileVersion=${{ inputs.version }}
           cp Jellyfin.Plugin.AllInOne/bin/Release/net10.0/Jellyfin.Plugin.AllInOne.dll dist/
-          (cd dist && zip -j "../jellyfin-plugin-all-in-one-${{ steps.version.outputs.v12 }}.zip" Jellyfin.Plugin.AllInOne.dll)
+          (cd dist && zip -j "../jellyfin-plugin-all-in-one-${{ inputs.version }}-jellyfin12.zip" Jellyfin.Plugin.AllInOne.dll)
 
-          echo "Checksums for manifest.json:"
-          md5sum jellyfin-plugin-all-in-one-*.zip
+      - name: Show checksums
+        run: md5sum jellyfin-plugin-all-in-one-*.zip
 
-      - name: Update manifest checksums
-        run: |
-          python3 - <<'PY'
-          import hashlib
-          import json
-          import pathlib
-
-          path = pathlib.Path("manifest.json")
-          data = json.loads(path.read_text())
-          for version in data[0]["versions"]:
-              archive = pathlib.Path(f"jellyfin-plugin-all-in-one-{version['version']}.zip")
-              version["checksum"] = hashlib.md5(archive.read_bytes()).hexdigest()
-          path.write_text(json.dumps(data, indent=4) + "\n")
-          PY
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add manifest.json
-          if git diff --cached --quiet; then
-            echo "Manifest checksums already up to date."
-          else
-            git commit -m "chore: update manifest checksums for ${{ steps.version.outputs.v12 }}"
-            git push origin main
-          fi
-
-      - name: Attach packages to release
-        uses: softprops/action-gh-release@v2
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
         with:
-          files: jellyfin-plugin-all-in-one-*.zip
+          name: jellyfin-plugin-all-in-one-${{ inputs.version }}
+          path: jellyfin-plugin-all-in-one-*.zip

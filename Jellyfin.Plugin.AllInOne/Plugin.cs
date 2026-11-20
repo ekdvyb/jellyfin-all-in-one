@@ -26,6 +26,9 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         Instance = this;
 
+        Configuration.MigrateIfNeeded();
+        SaveConfiguration();
+
         // Both services subscribe to library events in their constructors.
         // Resolving them here guarantees the subscriptions exist as soon as the plugin loads.
         _ = collectionSyncService;
@@ -37,8 +40,8 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     /// <inheritdoc />
     public override string Description =>
-        "Automatically builds collections for all movies and TV shows and downloads titles, " +
-        "descriptions and thumbnails for YouTube videos in your library.";
+        "Builds smart collections by franchise, studio, title, series and genre, and enriches " +
+        "YouTube videos with titles, channels, descriptions and thumbnails.";
 
     /// <inheritdoc />
     public override Guid Id => Guid.Parse(PluginInfo.Guid);

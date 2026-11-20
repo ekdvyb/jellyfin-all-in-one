@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Jellyfin.Data.Enums;
 using Jellyfin.Plugin.AllInOne.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,9 @@ namespace Jellyfin.Plugin.AllInOne.YouTube;
 /// </summary>
 public sealed class YouTubeMetadataService : IDisposable
 {
+    /// <summary>Provider id key holding the YouTube channel name.</summary>
+    public const string YouTubeChannelProviderKey = "YouTubeChannel";
+
     private const string ProcessedTag = "aio-youtube";
     private const string NotFoundPrefix = "aio-yt-notfound-";
     private const string FailedPrefix = "aio-yt-failed-";
@@ -51,7 +55,7 @@ public sealed class YouTubeMetadataService : IDisposable
             return;
         }
 
-        if (args.Item is Video)
+        if (args.Item is Video && args.Item is not Movie)
         {
             _queue.Writer.TryWrite(args.Item.Id);
         }
@@ -91,11 +95,12 @@ public sealed class YouTubeMetadataService : IDisposable
 
         var videos = _libraryManager.GetItemList(new InternalItemsQuery
         {
-            IncludeItemTypes = [BaseItemKind.Video],
+            IncludeItemTypes = [BaseItemKind.Video, BaseItemKind.MusicVideo],
             Recursive = true,
             IsVirtualItem = false
         })
         .OfType<Video>()
+        .Where(i => i is not Movie)
         .Where(ShouldProcess)
         .ToList();
 
@@ -194,6 +199,17 @@ public sealed class YouTubeMetadataService : IDisposable
 
         item.ProviderIds["YouTube"] = videoId;
 
+        // The channel is what makes YouTube videos groupable like a studio/franchise.
+        if (!string.IsNullOrWhiteSpace(metadata.Author))
+        {
+            var channel = metadata.Author.Trim();
+            item.ProviderIds[YouTubeChannelProviderKey] = channel;
+            if (config.StoreChannelAsStudio)
+            {
+                item.Studios = [channel];
+            }
+        }
+
         if (config.FetchThumbnails)
         {
             ApplyImages(item, videoId, metadata.ThumbnailUrl);
@@ -218,7 +234,10 @@ public sealed class YouTubeMetadataService : IDisposable
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static string? FindVideoId(Video item)
+    /// <summary>
+    /// Finds a YouTube video id in an item's provider ids, filename, name or sidecar files.
+    /// </summary>
+    public static string? FindVideoId(BaseItem item)
     {
         if (item.ProviderIds.TryGetValue("YouTube", out var providerId)
             && YouTubeIdParser.IsValidId(providerId))

@@ -29,14 +29,15 @@ public sealed class AllInOneScheduledTask : IScheduledTask
     }
 
     /// <inheritdoc />
-    public string Name => "All-In-One: Sync collections & YouTube metadata";
+    public string Name => "All-In-One: Sync smart collections & YouTube metadata";
 
     /// <inheritdoc />
     public string Key => "JellyfinAllInOneSync";
 
     /// <inheritdoc />
     public string Description =>
-        "Rebuilds the automatic movie/TV collections and re-checks videos for YouTube titles and thumbnails.";
+        "Refreshes YouTube titles, channels and thumbnails first, then rebuilds smart collections " +
+        "by franchise, studio, title, series, genre and channel.";
 
     /// <inheritdoc />
     public string Category => "All-In-One";
@@ -45,19 +46,27 @@ public sealed class AllInOneScheduledTask : IScheduledTask
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var config = Plugin.Instance?.Configuration ?? new PluginConfiguration();
-        progress.Report(0);
+        var reporter = progress;
+        reporter.Report(0);
+
+        // Fetch channel metadata first so the collection pass can group by it.
+        if (config.EnableYouTubeMetadata)
+        {
+            IProgress<double>? youtubeProgress = reporter is null
+                ? null
+                : new Progress<double>(p => reporter.Report(p * 0.6));
+            await _youtubeMetadata.SyncAllAsync(youtubeProgress, cancellationToken).ConfigureAwait(false);
+        }
 
         if (config.EnableAutoCollections)
         {
-            await _collectionSync.SyncAsync(progress, cancellationToken).ConfigureAwait(false);
+            IProgress<double>? collectionProgress = reporter is null
+                ? null
+                : new Progress<double>(p => reporter.Report(60 + (p * 0.4)));
+            await _collectionSync.SyncAsync(collectionProgress, cancellationToken).ConfigureAwait(false);
         }
 
-        if (config.EnableYouTubeMetadata)
-        {
-            await _youtubeMetadata.SyncAllAsync(progress, cancellationToken).ConfigureAwait(false);
-        }
-
-        progress.Report(100);
+        reporter?.Report(100);
         _logger.LogInformation("All-In-One scheduled task finished.");
     }
 

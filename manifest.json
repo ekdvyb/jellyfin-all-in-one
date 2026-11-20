@@ -2,25 +2,25 @@
   {
     "guid": "bb1a6c35-3d1b-48af-8d0a-3c8d0ff039cb",
     "name": "Jellyfin All-In-One",
-    "description": "Builds automatic movie/TV collections and fetches YouTube video titles, descriptions and thumbnails without an API key.\n",
-    "overview": "Automatic collections + YouTube metadata in one plugin",
+    "description": "Builds smart collections by franchise, studio, title, series, genre and YouTube channel, and fetches YouTube titles, channels, descriptions and thumbnails without an API key.\n",
+    "overview": "Smart collections + YouTube metadata in one plugin",
     "owner": "ekdvyb",
     "category": "General",
     "versions": [
       {
-        "version": "1.0.1.0",
-        "changelog": "Jellyfin 12.4 / .NET 10 build.",
+        "version": "1.1.0.0",
+        "changelog": "Smart grouping replaces broad All Movies/All TV Shows lists. Adds franchise/trilogy detection, YouTube channel grouping and channel-to-studio metadata.",
         "targetAbi": "12.4.0.0",
-        "sourceUrl": "https://github.com/ekdvyb/jellyfin-all-in-one/releases/download/v1.0.1.0/jellyfin-plugin-all-in-one-1.0.1.0.zip",
-        "checksum": "8dda9f6d49b6cfb11bf7fc7904b3bb12",
+        "sourceUrl": "https://github.com/ekdvyb/jellyfin-all-in-one/releases/download/v1.1.0.0/jellyfin-plugin-all-in-one-1.1.0.0-jellyfin12.zip",
+        "checksum": "PENDING",
         "timestamp": "2026-11-20T00:00:00Z"
       },
       {
-        "version": "1.0.0.0",
-        "changelog": "Jellyfin 10.11 / .NET 9 build.",
+        "version": "1.1.0.0",
+        "changelog": "Smart grouping replaces broad All Movies/All TV Shows lists. Adds franchise/trilogy detection, YouTube channel grouping and channel-to-studio metadata.",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/ekdvyb/jellyfin-all-in-one/releases/download/v1.0.1.0/jellyfin-plugin-all-in-one-1.0.0.0.zip",
-        "checksum": "b529861cfc2fb9af8cd002c6ac791b06",
+        "sourceUrl": "https://github.com/ekdvyb/jellyfin-all-in-one/releases/download/v1.1.0.0/jellyfin-plugin-all-in-one-1.1.0.0-jellyfin10.11.zip",
+        "checksum": "PENDING",
         "timestamp": "2026-11-20T00:00:00Z"
       }
     ]

@@ -2,58 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>All-In-One: Collections &amp; YouTube Metadata</title>
+    <title>Jellyfin All-In-One</title>
 </head>
 <body>
     <div id="AllInOneConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
         <div data-role="content">
             <div class="content-primary">
                 <form id="AllInOneConfigForm">
-                    <h2>Automatic collections</h2>
+                    <h2>Smart collections</h2>
+                    <p class="fieldDescription">Collections are rebuilt from your library. Only collections marked as managed by this plugin are ever changed or deleted.</p>
+
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input id="EnableAutoCollections" type="checkbox" is="emby-checkbox" />
-                            <span>Enable automatic collections</span>
+                            <span>Enable smart collections</span>
                         </label>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
-                            <input id="CreateAllMoviesCollection" type="checkbox" is="emby-checkbox" />
-                            <span>Create an "All Movies" collection</span>
+                            <input id="GroupByFranchise" type="checkbox" is="emby-checkbox" />
+                            <span>Group trilogies and franchises by title</span>
+                        </label>
+                        <div class="fieldDescription">Detects shared title prefixes such as Batman, Rocky, The Matrix, Harry Potter and Mission: Impossible. Provider collection ids are used too.</div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="GroupByStudio" type="checkbox" is="emby-checkbox" />
+                            <span>Group releases by studio</span>
                         </label>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
-                            <input id="CreateAllShowsCollection" type="checkbox" is="emby-checkbox" />
-                            <span>Create an "All TV Shows" collection</span>
+                            <input id="GroupByTitle" type="checkbox" is="emby-checkbox" />
+                            <span>Group items with the same name</span>
+                        </label>
+                        <div class="fieldDescription">Useful for alternate cuts and duplicate editions.</div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="GroupBySeries" type="checkbox" is="emby-checkbox" />
+                            <span>Group TV episodes by series</span>
                         </label>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
-                            <input id="CreateGenreCollections" type="checkbox" is="emby-checkbox" />
-                            <span>Create genre collections (for example "Action Movies")</span>
+                            <input id="GroupByGenre" type="checkbox" is="emby-checkbox" />
+                            <span>Group by genre</span>
                         </label>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
-                            <input id="CreateDecadeCollections" type="checkbox" is="emby-checkbox" />
-                            <span>Create decade collections (for example "Movies from the 2020s")</span>
+                            <input id="GroupByYouTubeChannel" type="checkbox" is="emby-checkbox" />
+                            <span>Group YouTube videos by channel</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="GroupByType" type="checkbox" is="emby-checkbox" />
+                            <span>Create broad type collections</span>
+                        </label>
+                        <div class="fieldDescription">Off by default. Creates Movies, TV Shows, Episodes, Music Videos and YouTube Videos collections.</div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="GroupByDecade" type="checkbox" is="emby-checkbox" />
+                            <span>Create decade collections</span>
                         </label>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input id="RunOnLibraryChange" type="checkbox" is="emby-checkbox" />
-                            <span>Sync collections automatically after library changes</span>
+                            <span>Sync automatically after library changes</span>
                         </label>
                     </div>
                     <div class="inputContainer">
                         <label class="inputLabel inputLabelUnfocused" for="CollectionPrefix">Collection name prefix</label>
                         <input id="CollectionPrefix" name="CollectionPrefix" type="text" is="emby-input" />
-                        <div class="fieldDescription">Prefix added to every collection managed by this plugin.</div>
                     </div>
                     <div class="inputContainer">
                         <label class="inputLabel inputLabelUnfocused" for="MinItemsPerCollection">Minimum items per collection</label>
                         <input id="MinItemsPerCollection" name="MinItemsPerCollection" type="number" is="emby-input" min="1" />
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="MinFranchisePrefixTokens">Franchise detection sensitivity</label>
+                        <input id="MinFranchisePrefixTokens" name="MinFranchisePrefixTokens" type="number" is="emby-input" min="1" max="6" />
+                        <div class="fieldDescription">Shared title words required when neither title is simply the shorter one. Lower is more aggressive.</div>
                     </div>
 
                     <br />
@@ -80,6 +113,12 @@
                         <label class="emby-checkbox-label">
                             <input id="DownloadDescription" type="checkbox" is="emby-checkbox" />
                             <span>Write the video description to the overview</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="StoreChannelAsStudio" type="checkbox" is="emby-checkbox" />
+                            <span>Store the YouTube channel as the video studio</span>
                         </label>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
@@ -121,13 +160,16 @@
             };
 
             var checkboxes = [
-                'EnableAutoCollections', 'CreateAllMoviesCollection', 'CreateAllShowsCollection',
-                'CreateGenreCollections', 'CreateDecadeCollections', 'RunOnLibraryChange',
-                'EnableYouTubeMetadata', 'ProcessOnLibraryChange', 'RenameVideoFromYouTube',
-                'DownloadDescription', 'FetchThumbnails', 'OverwriteExistingMetadata'
+                'EnableAutoCollections', 'GroupByFranchise', 'GroupByStudio', 'GroupByTitle',
+                'GroupBySeries', 'GroupByGenre', 'GroupByYouTubeChannel', 'GroupByType',
+                'GroupByDecade', 'RunOnLibraryChange', 'EnableYouTubeMetadata',
+                'ProcessOnLibraryChange', 'RenameVideoFromYouTube', 'DownloadDescription',
+                'StoreChannelAsStudio', 'FetchThumbnails', 'OverwriteExistingMetadata'
             ];
 
-            var numbers = ['MinItemsPerCollection', 'RequestDelayMs'];
+            var numbers = [
+                'MinItemsPerCollection', 'MinFranchisePrefixTokens', 'RequestDelayMs'
+            ];
             var texts = ['CollectionPrefix'];
             var selects = ['PreferredThumbnail'];
 
@@ -138,7 +180,13 @@
                         document.querySelector('#' + id).checked = !!config[id];
                     });
                     numbers.forEach(function (id) {
-                        document.querySelector('#' + id).value = config[id];
+                        var value = config[id];
+                        if (value === undefined || value === null) {
+                            if (id === 'MinFranchisePrefixTokens') value = 2;
+                            else if (id === 'MinItemsPerCollection') value = 2;
+                            else value = 700;
+                        }
+                        document.querySelector('#' + id).value = value;
                     });
                     texts.forEach(function (id) {
                         document.querySelector('#' + id).value = config[id] || '';
