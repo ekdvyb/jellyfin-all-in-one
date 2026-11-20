@@ -1,0 +1,18 @@
+---
+name: "All-In-One: Collections & YouTube Metadata"
+guid: "bb1a6c35-3d1b-48af-8d0a-3c8d0ff039cb"
+version: "1.0.0.0"
+targetAbi: "12.4.0.0"
+framework: "net10.0"
+overview: "Automatic movie/TV collections and YouTube titles, descriptions and thumbnails."
+description: >
+  A single Jellyfin plugin that builds and maintains collections for all movies and TV
+  shows (optionally by genre and decade) and enriches YouTube videos with titles,
+  descriptions and thumbnails fetched from YouTube when they are added to the library.
+category: "General"
+owner: "ekdvyb"
+artifacts:
+  - "Jellyfin.Plugin.AllInOne.dll"
+changelog: >
+  Initial release: automatic All Movies / All TV Shows, genre and decade collections,
+  and keyless YouTube metadata + thumbnail fetching.

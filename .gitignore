@@ -1,0 +1,9 @@
+bin/
+obj/
+dist/
+*.zip
+.vs/
+.idea/
+*.user
+*.suo
+.DS_Store

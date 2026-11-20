@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>All-In-One: Collections &amp; YouTube Metadata</title>
+</head>
+<body>
+    <div id="AllInOneConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="AllInOneConfigForm">
+                    <h2>Automatic collections</h2>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="EnableAutoCollections" type="checkbox" is="emby-checkbox" />
+                            <span>Enable automatic collections</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="CreateAllMoviesCollection" type="checkbox" is="emby-checkbox" />
+                            <span>Create an "All Movies" collection</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="CreateAllShowsCollection" type="checkbox" is="emby-checkbox" />
+                            <span>Create an "All TV Shows" collection</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="CreateGenreCollections" type="checkbox" is="emby-checkbox" />
+                            <span>Create genre collections (for example "Action Movies")</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="CreateDecadeCollections" type="checkbox" is="emby-checkbox" />
+                            <span>Create decade collections (for example "Movies from the 2020s")</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="RunOnLibraryChange" type="checkbox" is="emby-checkbox" />
+                            <span>Sync collections automatically after library changes</span>
+                        </label>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="CollectionPrefix">Collection name prefix</label>
+                        <input id="CollectionPrefix" name="CollectionPrefix" type="text" is="emby-input" />
+                        <div class="fieldDescription">Prefix added to every collection managed by this plugin.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="MinItemsPerCollection">Minimum items per collection</label>
+                        <input id="MinItemsPerCollection" name="MinItemsPerCollection" type="number" is="emby-input" min="1" />
+                    </div>
+
+                    <br />
+                    <h2>YouTube metadata</h2>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="EnableYouTubeMetadata" type="checkbox" is="emby-checkbox" />
+                            <span>Enable YouTube metadata fetching</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="ProcessOnLibraryChange" type="checkbox" is="emby-checkbox" />
+                            <span>Process new videos automatically</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="RenameVideoFromYouTube" type="checkbox" is="emby-checkbox" />
+                            <span>Replace the video name with the YouTube title</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="DownloadDescription" type="checkbox" is="emby-checkbox" />
+                            <span>Write the video description to the overview</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="FetchThumbnails" type="checkbox" is="emby-checkbox" />
+                            <span>Download YouTube thumbnails (primary + backdrop)</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="OverwriteExistingMetadata" type="checkbox" is="emby-checkbox" />
+                            <span>Re-check videos that were already processed</span>
+                        </label>
+                    </div>
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="PreferredThumbnail">Preferred thumbnail size</label>
+                        <select is="emby-select" id="PreferredThumbnail" name="PreferredThumbnail" class="emby-select-withcolor emby-select">
+                            <option value="MaxResolution">Maximum resolution (1280x720)</option>
+                            <option value="StandardDefinition">Standard definition (640x480)</option>
+                            <option value="HighQuality">High quality (480x360)</option>
+                        </select>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="RequestDelayMs">Delay between YouTube requests (ms)</label>
+                        <input id="RequestDelayMs" name="RequestDelayMs" type="number" is="emby-input" min="0" />
+                    </div>
+
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var AllInOneConfig = {
+                pluginUniqueId: 'bb1a6c35-3d1b-48af-8d0a-3c8d0ff039cb'
+            };
+
+            var checkboxes = [
+                'EnableAutoCollections', 'CreateAllMoviesCollection', 'CreateAllShowsCollection',
+                'CreateGenreCollections', 'CreateDecadeCollections', 'RunOnLibraryChange',
+                'EnableYouTubeMetadata', 'ProcessOnLibraryChange', 'RenameVideoFromYouTube',
+                'DownloadDescription', 'FetchThumbnails', 'OverwriteExistingMetadata'
+            ];
+
+            var numbers = ['MinItemsPerCollection', 'RequestDelayMs'];
+            var texts = ['CollectionPrefix'];
+            var selects = ['PreferredThumbnail'];
+
+            document.querySelector('#AllInOneConfigPage').addEventListener('pageshow', function () {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(AllInOneConfig.pluginUniqueId).then(function (config) {
+                    checkboxes.forEach(function (id) {
+                        document.querySelector('#' + id).checked = !!config[id];
+                    });
+                    numbers.forEach(function (id) {
+                        document.querySelector('#' + id).value = config[id];
+                    });
+                    texts.forEach(function (id) {
+                        document.querySelector('#' + id).value = config[id] || '';
+                    });
+                    selects.forEach(function (id) {
+                        document.querySelector('#' + id).value = config[id] || 'MaxResolution';
+                    });
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            document.querySelector('#AllInOneConfigForm').addEventListener('submit', function (e) {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(AllInOneConfig.pluginUniqueId).then(function (config) {
+                    checkboxes.forEach(function (id) {
+                        config[id] = document.querySelector('#' + id).checked;
+                    });
+                    numbers.forEach(function (id) {
+                        config[id] = parseInt(document.querySelector('#' + id).value, 10);
+                    });
+                    texts.forEach(function (id) {
+                        config[id] = document.querySelector('#' + id).value;
+                    });
+                    selects.forEach(function (id) {
+                        config[id] = document.querySelector('#' + id).value;
+                    });
+
+                    ApiClient.updatePluginConfiguration(AllInOneConfig.pluginUniqueId, config).then(function (result) {
+                        Dashboard.processPluginConfigurationUpdateResult(result);
+                    });
+                });
+
+                e.preventDefault();
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>

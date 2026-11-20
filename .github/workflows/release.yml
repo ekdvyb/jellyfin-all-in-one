@@ -1,0 +1,50 @@
+name: 🚀 Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version, e.g. 1.0.0.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Resolve version
+        id: version
+        run: |
+          RAW="${{ github.event.release.tag_name || inputs.version }}"
+          echo "value=${RAW#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          dotnet build Jellyfin.Plugin.AllInOne/Jellyfin.Plugin.AllInOne.csproj \
+            -c Release \
+            -p:Version=${{ steps.version.outputs.value }} \
+            -p:AssemblyVersion=${{ steps.version.outputs.value }} \
+            -p:FileVersion=${{ steps.version.outputs.value }}
+
+      - name: Package
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          mkdir -p dist
+          cp Jellyfin.Plugin.AllInOne/bin/Release/net10.0/Jellyfin.Plugin.AllInOne.dll dist/
+          (cd dist && zip -j "../jellyfin-plugin-all-in-one-${VERSION}.zip" Jellyfin.Plugin.AllInOne.dll)
+          echo "Checksum (MD5) for manifest.json:"
+          md5sum "jellyfin-plugin-all-in-one-${VERSION}.zip"
+
+      - name: Attach zip to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: jellyfin-plugin-all-in-one-*.zip
