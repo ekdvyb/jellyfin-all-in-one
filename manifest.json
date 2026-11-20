@@ -12,7 +12,7 @@
         "changelog": "Smart grouping replaces broad All Movies/All TV Shows lists. Adds franchise/trilogy detection, YouTube channel grouping and channel-to-studio metadata.",
         "targetAbi": "12.4.0.0",
         "sourceUrl": "https://github.com/ekdvyb/jellyfin-all-in-one/releases/download/v1.1.0.0/jellyfin-plugin-all-in-one-1.1.0.0-jellyfin12.zip",
-        "checksum": "PENDING",
+        "checksum": "d6b1302f06e7f92e3a952d4acf2f4318",
         "timestamp": "2026-11-20T00:00:00Z"
       },
       {
@@ -20,7 +20,7 @@
         "changelog": "Smart grouping replaces broad All Movies/All TV Shows lists. Adds franchise/trilogy detection, YouTube channel grouping and channel-to-studio metadata.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/ekdvyb/jellyfin-all-in-one/releases/download/v1.1.0.0/jellyfin-plugin-all-in-one-1.1.0.0-jellyfin10.11.zip",
-        "checksum": "PENDING",
+        "checksum": "00128942eb5f6d8fa3335c0537fadc9c",
         "timestamp": "2026-11-20T00:00:00Z"
       }
     ]
