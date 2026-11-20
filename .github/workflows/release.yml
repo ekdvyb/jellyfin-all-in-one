@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
@@ -59,6 +61,30 @@ jobs:
 
           echo "Checksums for manifest.json:"
           md5sum jellyfin-plugin-all-in-one-*.zip
+
+      - name: Update manifest checksums
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import pathlib
+
+          path = pathlib.Path("manifest.json")
+          data = json.loads(path.read_text())
+          for version in data[0]["versions"]:
+              archive = pathlib.Path(f"jellyfin-plugin-all-in-one-{version['version']}.zip")
+              version["checksum"] = hashlib.md5(archive.read_bytes()).hexdigest()
+          path.write_text(json.dumps(data, indent=4) + "\n")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          if git diff --cached --quiet; then
+            echo "Manifest checksums already up to date."
+          else
+            git commit -m "chore: update manifest checksums for ${{ steps.version.outputs.v12 }}"
+            git push origin main
+          fi
 
       - name: Attach packages to release
         uses: softprops/action-gh-release@v2
